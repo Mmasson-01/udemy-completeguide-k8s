@@ -9,9 +9,45 @@ metadata:
     # ADD ANNOTATION
     nginx.ingress.kubernetes.io/rewrite-target: /$1
     # UPDATE ANNOTATION
+
+    ### HTTPS CONFIG ###
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
+  ### HTTPS CONFIG ###
+  tls:
+    - hosts:
+        - k8s-multi.com
+        - www.k8s.multi.com
+      secretName: k8s-multi-com
+  ### HTTPS CONFIG END ###
   rules:
-    - http:
+    ### HTTPS CONFIG ###
+    - host: k8s-multi.com
+      http:
+        paths:
+          - path: /?(.*)
+            # UPDATE PATH
+            pathType: Prefix
+            # ADD PATHTYPE
+            backend:
+              service:
+                # UPDATE SERVICE FIELDS
+                name: client-cluster-ip-service
+                port:
+                  number: 3000
+          - path: /api/?(.*)
+            # UPDATE PATH
+            pathType: Prefix
+            # ADD PATHTYPE
+            backend:
+              service:
+                # UPDATE SERVICE FIELDS
+                name: server-cluster-ip-service
+                port:
+                  number: 5000
+    - host: www.k8s-multi.com
+      http:
         paths:
           - path: /?(.*)
             # UPDATE PATH
